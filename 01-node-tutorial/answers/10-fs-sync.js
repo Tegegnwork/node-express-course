@@ -1,0 +1,7 @@
+const { readFileSync, writeFileSync } = require('fs')
+console.log('start')
+writeFileSync('./temporary/fileA.txt','This is Line 1\n')
+writeFileSync('./temporary/fileA.txt','This is Line 2\n', {flag: 'a'})
+writeFileSync('./temporary/fileA.txt','This is Line 3\n', {flag: 'a'})
+  const content = readFileSync('./temporary/fileA.txt' ,'utf8')
+  console.log(content)
