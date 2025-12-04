@@ -1,9 +1,10 @@
 const http = require("http");
 var StringDecoder = require("string_decoder").StringDecoder;
-
+// Function to parse incoming POST request body 
 const getBody = (req, callback) => {
   const decode = new StringDecoder("utf-8");
   let body = "";
+  console.log("REQUEST",req);
   req.on("data", function (data) {
     body += decode.write(data);
   });
@@ -59,6 +60,6 @@ const server = http.createServer((req, res) => {
     res.end(form());
   }
 });
-
+server.on("request", () => console.log("event received"));
 server.listen(3000);
 console.log("The server is listening on port 3000.");
