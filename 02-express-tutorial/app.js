@@ -18,29 +18,41 @@ app.get('/about', (req, res) =>{
           const idToFind = parseInt(req.params.productID) 
          const product = products.find((p) => p.id === idToFind)
           if(!product){
-            res.status(404).send('The product not found')
+           return res.status(404).json({ error: 'Product not found' })
           }
           res.json(product)
         })
         app.get('/api/v1/query', (req,res) => {
   const {search,limit,minPrice,maxPrice }= req.query
-  let result = [...products]
+  let productsResult = [...products]
+
+  
   if (search) {
-    result = result.filter((product) => product.name.includes(search))
+    productsResult = productsResult.filter((product) => product.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
   }
      // Apply limit
-  if(limit ) { result= result.slice(0, parseInt(limit)
-  
-    )}
+  if(limit ){
+     const lim = Number(limit)
+     if(!isNaN(lim) && lim > 1)
+    { productsResult= productsResult.slice(0, lim)
+    }
+  }
     if(minPrice) {
-      result = result.filter((product)=> product.price >= parseFloat(minPrice))
+      const min = Number(minPrice)
+      if(!isNaN(min)){
+      productsResult = productsResult.filter((product)=> product.price >= min)
     }
+  }
 if(maxPrice) {
-      result = result.filter((product)=> product.price < parseFloat(maxPrice))
-    }
-  res.json(result)
-   })
+  const max = Number(maxPrice)
+  if(!isNaN(max)){
+      productsResult = productsResult.filter((product)=> product.price <= max)
+  }
+}
 
+  res.json(productsResult)
+        
+      })
 app.all('*', (req, res) => {
   res.status(404).send('The page not found')
 })
