@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Great World</title>
+</head>
+<body>
+  <h1> Make the difference!</h1>
+  <button id="loadProductsBtn">Product Loaded</button>
+    <div id="productsContainer"></div>
+
+<script>
+  document.getElementById('loadProductsBtn').addEventListener('click', loadProducts);
+
+  async function loadProducts() {
+    try {
+      const response = await fetch('/api/v1/products');
+      const data = await response.json();
+
+      const container = document.getElementById('productsContainer');
+      container.innerHTML = '';
+
+      data.forEach(product => {
+        const item = document.createElement('div');
+        item.innerHTML = `
+          <strong>${product.name}</strong><br>
+          Price: $${product.price}<br><br>
+        `;
+        container.appendChild(item);
+      });
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+</script>
+
+</body>
+</html>
+  
