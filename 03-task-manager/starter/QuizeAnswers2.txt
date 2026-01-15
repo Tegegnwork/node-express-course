@@ -1,0 +1,20 @@
+1 Why was the asyncWrapper middleware created?
+
+The asyncWrapper middleware was created to eliminate repetitive 
+try/catch blocks in async route handlers. It automatically catches 
+errors thrown in async functions and passes them to Express’s error-handling 
+middleware using next(err), keeping the code cleaner and more readable.
+
+
+2 Code to ensure both a status code and an error message are sent when a task
+ does not exist
+
+Assuming a CustomAPIError class and a centralized error handler already exist, 
+the route logic can be written like this:
+
+if (!task) {
+  throw new CustomAPIError(`No task with id: ${id}`, 404)
+}
+
+This throws a custom error with both a message and a status code, which is then 
+handled by the error handler and sent back to the client.
