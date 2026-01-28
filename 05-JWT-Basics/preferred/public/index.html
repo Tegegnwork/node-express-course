@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login/Register </title>
+  <link rel="stylesheet" href="styles.css">      
+</head>
+<body>
+  <div class="container">
+    <h1>Login / Register</h1>
+    
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('login')">Login</div>
+      <div class="tab" onclick="showTab('register')">Register</div>
+    </div>
+    
+    <!-- Login Form -->
+    <div id="login-tab" class="tab-content active">
+      <div class="input-group">
+        <label for="login-name">Username</label>
+        <input id="login-name" type="text" placeholder="Enter your username" autocomplete="username">
+      </div>
+      
+      <div class="input-group">
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" placeholder="Enter your password" autocomplete="current-password">
+      </div>
+      
+      <button class="btn-primary" onclick="login()">Login</button>
+      
+      <p class="switch-text">
+        Don't have an account? 
+        <a href="#" onclick="showTab('register')">Register here</a>
+      </p>
+    </div>
+    
+    <!-- Register Form -->
+    <div id="register-tab" class="tab-content">
+      <div class="input-group">
+        <label for="register-name">Username</label>
+        <input id="register-name" type="text" placeholder="Choose a username" autocomplete="username">
+      </div>
+      <form>
+      <div class="input-group">
+        <label for="register-password">Password</label>
+        <input id="register-password" type="password" placeholder="Choose a password" autocomplete="new-password">
+      </div>
+      
+      <div class="input-group">
+        <label for="register-confirm">Confirm Password</label>
+        <input id="register-confirm" type="password" placeholder="Confirm your password" autocomplete="new-password">
+      </div>
+      </form>
+      <button class="btn-primary" onclick="register()">Register</button>
+      
+      <p class="switch-text">
+        Already have an account? 
+        <a href="#" onclick="showTab('login')">Login here</a>
+      </p>
+    </div>
+    
+    <!-- Actions Section -->
+    <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #eee;">
+      <button class="btn-secondary" onclick="getHello()">Get Hello Message</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // Tab switching
+    function showTab(tabName) {
+      // Update tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      document.querySelectorAll('.tab').forEach(tab => {
+        if (tab.textContent.toLowerCase().includes(tabName)) {
+          tab.classList.add('active');
+        }
+      });
+      
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+    
+    // Login function
+    async function login() {
+      const name = document.getElementById('login-name').value;
+      const password = document.getElementById('login-password').value;
+      const resultDiv = document.getElementById('result');
+      
+      // Validation
+      if (!name || !password) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'Please enter both username and password';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/v1/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          localStorage.setItem('token', data.token);
+          resultDiv.className = 'success';
+          resultDiv.innerText = 'Logged in successfully!';
+          
+          // Clear input fields
+          document.getElementById('login-name').value = '';
+          document.getElementById('login-password').value = '';
+        } else {
+          resultDiv.className = 'error';
+          resultDiv.innerText = data.message || 'Login failed';
+        }
+      } catch (error) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'Error: ' + error.message;
+      }
+    }
+    
+    // Register function
+    async function register() {
+      const name = document.getElementById('register-name').value;
+      const password = document.getElementById('register-password').value;
+      const confirmPassword = document.getElementById('register-confirm').value;
+      const resultDiv = document.getElementById('result');
+      
+      // Validation
+      if (!name || !password || !confirmPassword) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'Please fill in all fields';
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'Passwords do not match';
+        return;
+      }
+      
+      if (password.length < 6) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'Password must be at least 6 characters';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/v1/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          resultDiv.className = 'success';
+          resultDiv.innerText = 'Registration successful! You can now login.';
+          
+          // Clear input fields
+          document.getElementById('register-name').value = '';
+          document.getElementById('register-password').value = '';
+          document.getElementById('register-confirm').value = '';
+          
+          // Switch to login tab
+          setTimeout(() => showTab('login'), 1500);
+        } else {
+          resultDiv.className = 'error';
+          resultDiv.innerText = data.message || 'Registration failed';
+        }
+      } catch (error) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'Error: ' + error.message;
+      }
+    }
+    
+    // Get Hello message function
+    async function getHello() {
+      const token = localStorage.getItem('token');
+      const resultDiv = document.getElementById('result');
+      
+      if (!token) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'No Token provided';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/v1/hello', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          resultDiv.className = 'info';
+          resultDiv.innerText = 'Message: ' + data.message;
+        } else {
+          resultDiv.className = 'error';
+          resultDiv.innerText = 'Error: ' + data.message;
+          // Clear invalid token
+          localStorage.removeItem('token');
+        }
+      } catch (error) {
+        resultDiv.className = 'error';
+        resultDiv.innerText = 'Error: ' + error.message;
+      }
+    }
+    
+    // Logout function
+    function logout() {
+      localStorage.removeItem('token');
+      const resultDiv = document.getElementById('result');
+      resultDiv.className = 'info';
+      resultDiv.innerText = 'Logged out successfully!';
+    }
+    
+    // Check if user is logged in on page load
+    window.onload = function() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.className = 'info';
+        resultDiv.innerText = 'You are logged in. Welcome back!';
+      }
+    };
+  </script>
+</body>
+</html>
